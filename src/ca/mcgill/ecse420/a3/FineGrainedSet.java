@@ -18,17 +18,22 @@ public class FineGrainedSet<T> {
         Node<T> pred = head;
         try {
             Node<T> cur = pred.next;
+            // if the current node is null then the only element is pred so
+            // check if its the value we're looking for
             if (cur == null || pred.key == item.hashCode()) {
                 return pred.key == item.hashCode();
             }
             cur.lock();
             try {
+                // move through the list until the current value is gretaer than the items
+                // and we are not at the end
                 while (cur.key < item.hashCode() && cur.next != null) {
                     pred.unlock();
                     pred = cur;
                     cur = cur.next;
                     cur.lock();
                 }
+                // return whether or not we found the item
                 return cur.key == item.hashCode();
             } finally {
                 cur.unlock();

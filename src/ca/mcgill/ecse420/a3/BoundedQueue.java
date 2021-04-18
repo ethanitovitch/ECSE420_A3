@@ -23,22 +23,32 @@ public class BoundedQueue<T> {
         notEmptyCondition = deqLock.newCondition();
     }
 
+    /**
+     * Enqueues an element into the list
+     * @param x is a value to enqueue
+     * @return void
+     * */
     public void enq(T x) throws InterruptedException {
         boolean mustWakeDequeuers = false;
         enqLock.lock();
         try {
+            // if the queue is full wait for an element to get deuqeued
             while (tail - head == capacity) {
                 notFullCondition.await();
             }
 
+            // add the element to the tail list and increment it
             values[tail % capacity] = x;
             tail++;
+
             if (tail - head == 1) {
                 mustWakeDequeuers = true;
             }
         } finally {
             enqLock.unlock();
         }
+
+        // wake up any pending dequeuers
         if (mustWakeDequeuers) {
             deqLock.lock();
             try {
@@ -49,22 +59,32 @@ public class BoundedQueue<T> {
         }
     }
 
+    /**
+     * Dequeues an element from the list
+     * @return value
+     * */
     public T deq() throws InterruptedException {
         T value;
         boolean mustWakeEnqueuers = true;
         deqLock.lock();
         try {
+            // if the queue is empty wait for an element to be enqueued
             while (tail == head) {
                 notEmptyCondition.await();
             }
+
+            // get the value from the head and increment the head
             value = (T) values[head % capacity];
             head++;
+
             if (tail - head + 1 == capacity) {
                 mustWakeEnqueuers = true;
             }
         } finally {
             deqLock.unlock();
         }
+
+        // wake up any pending enqueuers
         if (mustWakeEnqueuers) {
             enqLock.lock();
             try {

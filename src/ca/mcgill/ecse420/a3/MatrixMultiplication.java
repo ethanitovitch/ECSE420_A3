@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MatrixMultiplication {
 
-    private static final int MATRIX_SIZE = 64;
+    private static final int MATRIX_SIZE = 2000;
     public static ExecutorService exec = Executors.newCachedThreadPool();
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
